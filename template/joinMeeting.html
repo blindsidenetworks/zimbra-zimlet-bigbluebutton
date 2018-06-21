@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      .center-div
+      {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 400px;
+        height: 300px;
+        border-radius: 3px;
+        background-color: #ccc;
+      }
+      tr, td {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="javascript:onSubmit();">
+      <div class="center-div">
+        <a href="https://bigbluebutton.org/" target="_new">
+          <h2 style="text-align: center;"><font size="5px">Welcome to BigBlueButton meeting!</font></h2>
+        </a>
+        <p style="margin-top: 30px; text-align: left; margin-left: 5px;">
+          &nbsp;BigBlueButton meeting has been created, please enter the following information for joining the meeting.
+        </p>
+        <table align="center" style="margin-top: 30px;">
+          <tr>
+            <td>Display name:</td>
+            <td>
+              <input type="text" value="%s" id="displayName" />
+              <p id="displayNameError" style="color: red; display: none;">Required!</p>
+            </td>
+          </tr>
+        </table>
+        <div style="text-align: center;">
+          <button type="submit" name="submit" style="margin-top: 10px; align-self: center;">
+            <p style="text-align: center;">Join meeting</p>
+          </button>
+        </div>
+      </div>
+    </form>
+    <script type="text/javascript">
+      document.getElementById("displayName").addEventListener("input", (event) => {
+        document.getElementById("displayNameError").style.display = "none";
+      }, false)
+
+      function onSubmit(event) {
+        if (!document.getElementById("displayName").value) {
+          document.getElementById("displayNameError").style.display = "inline";
+          return;
+        }
+
+        const link = window.location.href;
+        var data = {};
+        data["request"] = "joinMeetingWithInput";
+        data["bigbluebutton_meetingID"] = "%s";
+        data["bigbluebutton_displayName"] = document.getElementById("displayName").value;
+        sendRequest(link, data);
+      }
+
+      function sendRequest(link, data) {
+        var urlEncodedData = ""; 
+        var urlEncodedDataPairs = [];
+        for (var name in data) {
+          urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
+        }
+        urlEncodedData = urlEncodedDataPairs.join('&');
+        var baseURL = link.substring(0, link.lastIndexOf("?") + 1);
+        window.open(baseURL + urlEncodedData, "_self");
+      }
+    </script>
+  </body>
+</html>

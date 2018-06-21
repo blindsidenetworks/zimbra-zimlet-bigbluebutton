@@ -1,0 +1,13 @@
+.Imgbigbluebutton-panelIcon {
+    background:url("bigbluebutton.png") no-repeat 0 0;
+    width:16px;
+    height:16px;
+    overflow:hidden;
+}
+
+table.bigbluebutton_table input {
+	border-width: 1;
+	border-style: solid;
+	border-color: black;
+	padding: 2px 4px;
+}

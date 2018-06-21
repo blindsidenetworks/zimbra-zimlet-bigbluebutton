@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      .center-div
+      {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 400px;
+        height: 300px;
+        border-radius: 3px;
+        background-color: #ccc;
+      }
+      tr, td {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+      <div class="center-div">
+        <a href="https://bigbluebutton.org/" target="_new">
+          <h2 style="text-align: center;"><font size="5px">Welcome to BigBlueButton meeting!</font></h2>
+        </a>
+        <p style="margin-top: 30px; text-align: left; margin-left: 10px;">
+          &nbsp;<b style="color: red;">WARNING</b><br/>
+          &nbsp;There are %d users currently in the meeting, they will be logged out if you end this meeting.<br/><br/>
+          &nbsp;Are you sure you want to end this meeting?
+        </p>
+        
+        <div style="text-align: center;">
+          <button type="submit" name="submit" value="Yes" style="margin-top: 10px; width: 100px;" onclick="javascript:onSubmit()">
+            <p style="text-align: center;">Yes</p>
+          </button>
+        </div>
+      </div>
+    <script type="text/javascript">
+      function onSubmit() {
+        const link = window.location.href;
+        var data = {};
+        data["request"] = "confirmedEndMeeting";
+        data["bigbluebutton_meetingID"] = "%s";
+        sendRequest(link, data);
+      }
+
+      function sendRequest(link, data) {
+        var urlEncodedData = ""; 
+        var urlEncodedDataPairs = [];
+        for (var name in data) {
+          urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
+        }
+        urlEncodedData = urlEncodedDataPairs.join('&');
+        var baseURL = link.substring(0, link.lastIndexOf("?") + 1);
+        window.open(baseURL + urlEncodedData, "_self");
+      }
+    </script>
+  </body>
+</html>
