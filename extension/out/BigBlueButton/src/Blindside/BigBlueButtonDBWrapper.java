@@ -57,7 +57,7 @@ public class BigBlueButtonDBWrapper {
     
     private static final String FIND_ATTENDEE_SQL     = "SELECT attendees from " + BBB_MEETING_TABLE +
                                                         " WHERE meetingID = ?";
-    private static final String FIND_SECURITY_SQL     = "SELECT secret from " + BBB_MEETING_TABLE +
+    private static final String FIND_SECRET_SQL       = "SELECT secret from " + BBB_MEETING_TABLE +
                                                         " WHERE meetingID = ?";
     private static final String FIND_USERMEETING_SQL  = "SELECT meetingID from " + BBB_MEETING_TABLE +
                                                         " WHERE creatorEmail = ?";
@@ -135,7 +135,7 @@ public class BigBlueButtonDBWrapper {
                 meeting.addMeta("bn-recording-ready-url", BigBlueButtonWrapper.RECORDING_READY_URL);
                 meeting.addMeta("endcallbackurl",
                         BigBlueButtonWrapper.getEndMeetingCallbackURL(meetingID,
-                                String.valueOf(getMeetingSecurity(meetingID))));
+                                String.valueOf(getMeetingSecret(meetingID))));
                 return meeting;
             }
             throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
@@ -342,26 +342,26 @@ public class BigBlueButtonDBWrapper {
         }
     }
 
-    private static int getMeetingSecurity(String meetingID) throws BBBException {
+    private static int getMeetingSecret(String meetingID) throws BBBException {
         try {
             initializeConnection();
-            PreparedStatement stmt = conn.prepareStatement(FIND_SECURITY_SQL);
+            PreparedStatement stmt = conn.prepareStatement(FIND_SECRET_SQL);
             stmt.setString(1, meetingID);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                return rs.getInt("security");
+                return rs.getInt("secret");
             }
             throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
                     "Meeting " + meetingID + " doesnot exist!");
         } catch (SQLException | ServiceException e) {
             throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
-                    "Failed to get security for meeting: " + meetingID + ": " + e.getMessage());
+                    "Failed to get secret for meeting: " + meetingID + ": " + e.getMessage());
         }
     }
     
     public static boolean authenticateEndMeeting(String meetingID, String securitySalt)
             throws BBBException {
-        return Integer.parseInt(securitySalt) == getMeetingSecurity(meetingID);
+        return Integer.parseInt(securitySalt) == getMeetingSecret(meetingID);
     }
 
     public static void addMeeting(String meetingID, String email, String meetingName,
