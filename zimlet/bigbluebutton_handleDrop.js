@@ -26,7 +26,7 @@ BBB_Handler.prototype.emailDropped = function(emailList) {
             attendees.push({email: participant.getAddress()});
         }
     }
-    this._displayCreateMeetingDialog(attendees); // locate in bigbluebutton_createMeeting.js
+    this._displayStartMeetingDialog(attendees); // locate in bigbluebutton_startMeeting.js
 }
 
 BBB_Handler.prototype.contactDropped = function(contactList) {
@@ -41,7 +41,7 @@ BBB_Handler.prototype.contactDropped = function(contactList) {
             attendees.push({email: email});
         }        
     }
-    this._displayCreateMeetingDialog(attendees); // locate in bigbluebutton_createMeeting.js
+    this._displayStartMeetingDialog(attendees); // locate in bigbluebutton_startMeeting.js
 }
 
 BBB_Handler.prototype.appointmentDropped = function(appointments) {

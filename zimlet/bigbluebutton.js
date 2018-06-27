@@ -14,27 +14,24 @@ com_zimbra_bigbluebutton_HandlerObject.prototype.constructor = com_zimbra_bigblu
 var BBB_Handler = com_zimbra_bigbluebutton_HandlerObject; /* simplify handler object */
 
 BBB_Handler.MEETING_ID = {propId: "bigbluebutton_meetingID", label: "BigBlueButton_meetingID", inputType: "text",
-                          defaultVal: "", required: true, warningID: "bigbluebutton_meetingIDWarning"};
+                          defaultVal: ""};
+
+BBB_Handler.STARTMEETING_MEETING_ID = {propId: "bigbluebutton_startMeetingMeetingID", label: "BigBlueButton_meetingID"};
 
 BBB_Handler.MEETING_NAME = {propId: "bigbluebutton_meetingName", label: "BigBlueButton_meetingName", inputType: "text",
-                            defaultVal: "", required: false};
+                            defaultVal: ""};
 
-BBB_Handler.RECORDING = {propId: "bigbluebutton_recording", label: "BigBlueButton_recording", inputType: "radio",
-                         defaultVal: "no", values: ["yes", "no"]};
+BBB_Handler.RECORDING = {propId: "bigbluebutton_recording", label: "BigBlueButton_recording", inputType: "checkbox",
+                         defaultVal: false};
 
 BBB_Handler.UPDATE_RECORD = {propId: "bigbluebutton_manageRecording", label: "BigBlueButton_manageRecording", inputType: "radio",
                              defaultVal: "publish", values: ["publish", "unpublish", "delete", "update"]};
 
-BBB_Handler.DISPLAY_NAME = {propId: "bigbluebutton_displayName", label: "BigBlueButton_displayName", inputType: "text",
-                            defaultVal: "", required: false};
 
-BBB_Handler.SHOW_INVITATION = {propId: "bigbluebutton_showInvitation", label: "BigBlueButton_showInvitation", inputType: "radio",
-                               defaultVal: "yes", values: ["yes", "no"]};
 
 BBB_Handler.prototype.init = function() {
     this.displayName = appCtxt.getActiveAccount().getDisplayName();
     this.email = appCtxt.getActiveAccount().getEmail();
-    this.loadOldPreference();
 }
 
 BBB_Handler.prototype.singleClicked = function() {
@@ -52,12 +49,12 @@ BBB_Handler.prototype.initializeToolbar = function(app, toolbar, controller, vie
         if (op) {
         var menu = op.getMenu();
         if (menu) {
-            if (menu.getMenuItem("BigBlueButton_createMeeting"))
+            if (menu.getMenuItem("BigBlueButton_startMeeting"))
                 return;
 
-            var menuItem = menu.createMenuItem("BigBlueButton_createMeeting", {
+            var menuItem = menu.createMenuItem("BigBlueButton_startMeeting", {
                 image: "bigbluebutton-panelIcon",
-                text: this.getMessage("BigBlueButton_createQuickMeeting")
+                text: this.getMessage("BigBlueButton_startMeeting")
             });
             menuItem.addSelectionListener(new AjxListener(this, this._handleMenuClick, controller));
         }
@@ -87,7 +84,7 @@ BBB_Handler.prototype._handleMenuClick = function(controller) {
             emails.push({email: item.attr.email});
         }
     }
-    this._displayCreateMeetingDialog(emails); // locate in bigbluebutton_createMeeting.js
+    this._displayStartMeetingDialog(emails); // locate in bigbluebutton_createMeeting.js
 }
 
 
@@ -99,22 +96,10 @@ BBB_Handler.prototype.doDrop = function(droppedItem) {
 BBB_Handler.prototype.menuItemSelected = function(itemId) {
     switch(itemId) {
         case "START_MEETING":
-            this._displayCreateMeetingDialog(); // see bigbluebutton_createMeeting.js for more details
+            this._displayStartMeetingDialog(); // see bigbluebutton_startMeeting.js for more details
             break;
         case "JOIN_MEETING":
             this._displayJoinMeetingDialog(); // see bigbluebutton_joinMeeting.js for more details
-            break;
-        case "MANAGE_RECORDING":
-            this._displayManageRecordingDialog(); // see bigbluebutton_manageRecording.js for more details
-            break;
-        case "VIEW_RECORDING": 
-            this._displayViewRecordingDialog(); // see bigbluebutton_viewRecording.js for more details
-            break;
-        case "GET_MEETING_SUMMARY": 
-            this._displayGetMeetingSummaryDialog(); // see bigbluebutton_viewRecording.js for more details
-            break;
-        case "CONFIG_PREFERENCE":
-            this._displayConfigPreferenceDialog(); // see bigbluebutton_preference.js for more details
             break;
         case "END_MEETING":
             this._displayEndMeetingDialog(); // see bigbluebutton_endMeeting.js for more details
@@ -164,13 +149,28 @@ BBB_Handler.prototype.displayErrorDlg = function(title, errorMsg, okButtonCallba
     this._errorDlgView.getHtmlElement().style.overflow = "auto"
     this._errorDlgView.getHtmlElement().innerHTML = "<div style='width: 300px'><p id='BigBlueButton_errorDlgMsg'></p></div>";
     document.getElementById("BigBlueButton_errorDlgMsg").innerHTML = errorMsg;
+
+    const tryAgainButtonID = Dwt.getNextId();
+    const tryAgainButton = new DwtDialog_ButtonDescriptor(tryAgainButtonID,
+        this.getMessage("BigBlueButton_tryAgainButton"), DwtDialog.ALIGN_RIGHT);
+
+    const cancelButtonID = Dwt.getNextId();
+    const cancelButton = new DwtDialog_ButtonDescriptor(cancelButtonID,
+        this.getMessage("BigBlueButton_cancelButton"), DwtDialog.ALIGN_RIGHT);
+
     this._errorDlg = new ZmDialog({
         parent: this.getShell(),
         title: title,
         view: this._errorDlgView,
-        standardButtons: [DwtDialog.OK_BUTTON, DwtDialog.CANCEL_BUTTON]
+        standardButtons: DwtDialog.NO_BUTTONS,
+        extraButtons: [tryAgainButton, cancelButton]
     });
-    this._errorDlg.setButtonListener(DwtDialog.OK_BUTTON, callback);
+    this._errorDlg.setButtonListener(tryAgainButtonID, callback);
+    this._errorDlg.setButtonListener(cancelButtonID, (function(_this) {
+        return function() {
+            _this._errorDlg.popdown();
+        }
+    })(this));
     this._errorDlg.popup();
 }
 
@@ -229,6 +229,12 @@ BBB_Handler.prototype._getInput = function(PROPS, prefix) {
                     break;
                 }
             }
+        } else if (prop.inputType === 'checkbox') {
+            if (document.getElementById(prefix + prop.propId).checked) {
+                input[key] = true;
+            } else {
+                input[key] = false;
+            }
         }
     } 
     return input;
@@ -242,14 +248,12 @@ BBB_Handler.prototype._createInputTable = function(PROPS, prefix) {
     html.push("<table class='bigbluebutton_table'>");
     for (var i = 0; i < PROPS.length; ++i) {
         var prop = PROPS[i];
-        if (prop.inputType === "text") {
-            html.push("<tr><td>", this.getMessage(prop.label), "</td><td><input id='", prefix, prop.propId, "' type='text'/>");
-            if (prop.required) {
-                html.push("<td><p id='" + prop.warningID + "' style='color:red;display:none;'>&nbsp;Required!</p></td></tr>");
-            } else {
-                html.push("</td></tr>");
-            }
-        } else if (prop.inputType === "radio") {
+        if (prop.propId === "bigbluebutton_startMeetingMeetingID") {
+            html.push("<tr><td>", this.getMessage(prop.label), "</td><td><p id='", prefix, prop.propId, "'>", "</p></td></tr>");
+        } else if (prop.inputType !== "radio") {
+            html.push("<tr><td>", this.getMessage(prop.label), "</td><td><input id='", prefix, prop.propId, "' type='",
+                prop.inputType, "' value='", prop.defaultVal, "'></td></tr>");
+        } else {
             html.push("<tr><td>", this.getMessage(prop.label), "</td><td>");
             for (var j = 0; j < prop.values.length; ++j) {
                 var value = prop.values[j];
@@ -265,6 +269,22 @@ BBB_Handler.prototype._createInputTable = function(PROPS, prefix) {
 
     html.push("</table>");
     return html.join("");
+}
+
+// Helper function for clearing input table
+BBB_Handler.prototype._clearInputTable = function(PROPS, prefix) {
+    prefix = prefix ? prefix : "";
+    for (var i = 0; i < PROPS.length; ++i) {
+        var prop = PROPS[i];
+        var key = prop.propId;
+        if (prop.inputType === 'text') {
+            document.getElementById(prefix + key).value = ""
+        } else if (prop.inputType === 'radio') {
+            document.getElementById(prefix + prop.propId + "_" + prop.defaultVal).checked = true;
+        } else if (prop.inputType === 'checkbox') {
+            document.getElementById(prefix + prop.propId).checked = prop.defaultVal;
+        }
+    }
 }
 
 // Helper function to get url that sends request to the server extension
@@ -313,4 +333,99 @@ BBB_Handler.prototype.displayConfirmationDialog = function(title, content, okBut
     this._confirmDlg.setButtonListener(DwtDialog.OK_BUTTON, okCallback);
     this._confirmDlg.setButtonListener(DwtDialog.CANCEL_BUTTON, cancelCallback);
     this._confirmDlg.popup();
+}
+
+// add autocomplete to the meeting id list, based on
+// https://www.w3schools.com/howto/howto_js_autocomplete.asp
+function autocomplete(field, arr, callback) {
+    if (!arr || arr.length == 0) {
+        return;
+    }
+
+    var id = this.id + "_autocomplete-list";
+    deleteAutoCompleteList();
+    var currentFocus;
+
+    function onInput(event) {
+        var value = this.value;
+        deleteAutoCompleteList();
+        // if user enters nothing or enters a string longer than 11 character (length of meeting id),
+        // then don't display the list
+        if (!value || value.length > 11) {
+            return false;
+        }
+        currentFocus = -1;
+        var div = document.createElement("div");
+        div.id = id;
+        div.classList.add("autocomplete-items");
+        this.parentNode.appendChild(div);
+        for (var i = 0; i < arr.length; ++i) {
+            var item = arr[i];
+            if (arr[i].substr(0, value.length).toUpperCase() === value.toUpperCase()) {
+                var itemDiv = document.createElement("div");
+                itemDiv.innerHTML += "<b>" + item.substr(0, value.length) + "</b>";
+                itemDiv.innerHTML += item.substr(value.length);
+
+                itemDiv.addEventListener("click", (function(item) {
+                    return function() {
+                        field.value = item;
+                        deleteAutoCompleteList();
+                        callback(item);
+                    }
+                })(item));
+
+                div.appendChild(itemDiv);
+            }
+        }
+    }
+
+    if (field.addEventListener) {
+        field.addEventListener("input", onInput);
+    } else if (field.attachEvent) { // IE8 and earlier versions
+        field.attachEvent("oninput", onInput);
+    }
+
+    field.addEventListener("keydown", function(event) {
+        var x = document.getElementById(id);
+        if (x) {
+            x = x.getElementsByTagName("div");
+        }
+        if (event.keyCode == 40) {
+            ++currentFocus;
+            addActive(x);
+        } else if (event.keyCode == 38) {
+            --currentFocus;
+            addActive(x);
+        } else if (event.keyCode == 13) {
+            event.preventDefault();
+            if (currentFocus > -1) {
+                if (x) {
+                    x[currentFocus].click();
+                }
+            }
+        }
+    });
+    function addActive(x) {
+        if (!x)
+            return false;
+        removeActive(x);
+        if (currentFocus >= x.length)
+            currentFocus = 0;
+        if (currentFocus < 0)
+            currentFocus = x.length - 1;
+        x[currentFocus].classList.add("autocomplete-active");
+    }
+    
+    function removeActive(x) {
+        for (var i = 0; i < x.length; i++) {
+            x[i].classList.remove("autocomplete-active");
+        }
+    }
+
+    function deleteAutoCompleteList() {
+        var list = document.getElementById(id);
+        if (list) {
+            list.parentNode.removeChild(list);
+        }
+    }
 }

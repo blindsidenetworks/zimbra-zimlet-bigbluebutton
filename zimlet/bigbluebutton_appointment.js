@@ -44,13 +44,13 @@ BBB_Handler.prototype.onShowView = function(viewId) {
                     btn.setText(_this.getMessage("BigBlueButton_appointmentJoinMeetingBtn"));
                     btn.removeSelectionListeners();
                     btn.addSelectionListener(new AjxListener(_this, function() {
-                    _this._joinMeetingFromAppt(_this);
-                }))
-            }
-            document.getElementById("BigBlueButton_appointment_insertMeeting_" + count + "_btn").appendChild(btn.getHtmlElement());
-        } 
-    })(this), 0)
-  }
+                        _this._joinMeetingFromAppt(_this);
+                    }))
+                }
+                document.getElementById("BigBlueButton_appointment_insertMeeting_" + count + "_btn").appendChild(btn.getHtmlElement());
+            } 
+        })(this), 0)
+    }
 }
 
 
@@ -131,8 +131,8 @@ BBB_Handler.prototype._endMeetingForAppt = function(_this) {
             _this.displayConfirmationDialog(title, content, okCallback, cancelCallback);
         } else {
             var title = _this.getMessage("BigBlueButton_endMeetingForApptFailed");
-            var errMsg = "<p>Failed to end the meeting since the following error message:<br/>" + result.error_message +
-              "<br/><br/>Click 'OK' to try again.</p>";
+            var errMsg = "<p>Failed to end the meeting since the following error message:<br/>"
+                         + result.error_message + "</p>";
             var okButtonCallback = function () {
               _this._endMeetingForAppt(_this);
             }
@@ -170,8 +170,8 @@ BBB_Handler.prototype.handleEndApptMeetingResponse = function(response) {
         this.endApptMeetingRspDlg.popup();
     } else {
         var title = this.getMessage("BigBlueButton_endMeetingForApptFailed");
-        var errMsg = "<p>Failed to end the meeting since the following error message:<br/>" + result.error_message +
-            "<br/><br/>Click 'OK' to try again.</p>";
+        var errMsg = "<p>Failed to end the meeting since the following error message:<br/>"
+                     + result.error_message + "</p>";
         var okButtonCallback = function () {
             this._endMeetingForAppt(this);
         }
@@ -227,8 +227,8 @@ BBB_Handler.prototype._insertMeetingDetails = function(_this, saveMeeting, callb
             }
         } else { // failure cases
             var title = _this.getMessage("BigBlueButton_createApptMeetingFailed");
-            var errMsg = "<p>Failed to create the meeting since the following error message:<br/>" + result.error_message +
-                "<br/><br/>Click 'OK' to try again.</p>";
+            var errMsg = "<p>Failed to create the meeting since the following error message:<br/>"
+                + result.error_message + "</p>";
             var okButtonCallback = function () {
                 _this.sendRequest("createApptMeeting", _this.handleCreateApptMeetingResponse.bind(this), input);
             }

@@ -6,15 +6,13 @@
         <!-- add necessary include -->  
         <include>bigbluebutton.js</include>
         <include>bigbluebutton_appointment.js</include>
-        <include>bigbluebutton_createMeeting.js</include>
+        <include>bigbluebutton_startMeeting.js</include>
         <include>bigbluebutton_email.js</include>
         <include>bigbluebutton_endMeeting.js</include>
-        <include>bigbluebutton_getMeetingSummary.js</include>
         <include>bigbluebutton_handleDrop.js</include>
         <include>bigbluebutton_joinMeeting.js</include>
         <include>bigbluebutton_manageRecording.js</include>
-        <include>bigbluebutton_preference.js</include>
-        <include>bigbluebutton_viewRecording.js</include>
+        <include>bigbluebutton_viewMeetingSummary.js</include>
         <includeCSS>bigbluebutton.css</includeCSS>
         <source>bigbluebutton.png</source>
 
@@ -34,15 +32,11 @@
             <dragSource type="ZmAppt" />
 
             <contextMenu>
-              <menuItem icon="Preferences" label="${msg.BigBlueButton_configurePreferences}" id="CONFIG_PREFERENCE" />
-              <menuItem />
               <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_startMeeting}" id="START_MEETING" />
-              <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_joinMeeting}" id="JOIN_MEETING" />
-              <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_endMeeting}" id="END_MEETING" />
-              <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_getMeetingSummary}" id="GET_MEETING_SUMMARY" />
               <menuItem />
-              <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_manageRecording}" id="MANAGE_RECORDING" />
-              <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_viewRecording}" id="VIEW_RECORDING" />
+              <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_joinMeeting}" id="JOIN_MEETING" />
+              <menuItem />
+              <menuItem icon="bigbluebutton-panelIcon" label="${msg.BigBlueButton_endMeeting}" id="END_MEETING" />
             </contextMenu>
         </zimletPanelItem>
 </zimlet>

@@ -1,7 +1,5 @@
 package Blindside;
 
-import java.util.Properties;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,7 +11,9 @@ import com.zimbra.cs.extension.ZimbraExtension;
 import com.zimbra.soap.SoapServlet;
 
 public class BigBlueButtonExt implements ZimbraExtension {
-    public static final String CONFIG_FILE                = "/opt/zimbra/conf/BigBlueButton.properties";
+    public static final String defaultServerURL    = "http://test-install.blindsidenetworks.com/bigbluebutton/api";
+    public static final String defaultServerSecret = "8cd8ef52e8e101574e400365b55e11a6";
+    
     public static final String HTML_JOINMEETING_TEMPLATE  = "/opt/zimbra/lib/ext/BigBlueButton/joinMeeting.html";
     public static final String HTML_MEETINGENDED_TEMPLATE = "/opt/zimbra/lib/ext/BigBlueButton/meetingEnded.html";
     public static final String HTML_EndMeeting_TEMPLATE   = "/opt/zimbra/lib/ext/BigBlueButton/endMeeting.html";
@@ -38,8 +38,7 @@ public class BigBlueButtonExt implements ZimbraExtension {
     public void init() throws ServiceException {
         try {
             BigBlueButtonDBWrapper.makeSureTableExist();
-            Properties prop = BigBlueButtonHelper.getProperties(CONFIG_FILE);
-            this.bbb = new BigBlueButtonWrapper(prop.getProperty("URL"), prop.getProperty("securitySalt"));
+            this.bbb = new BigBlueButtonWrapper(defaultServerURL, defaultServerSecret);
         } catch (Exception e) { /* Failed to load properties or create database connection */
             ZimbraLog.extensions.error(SystemUtil.getStackTrace(e));
             return;

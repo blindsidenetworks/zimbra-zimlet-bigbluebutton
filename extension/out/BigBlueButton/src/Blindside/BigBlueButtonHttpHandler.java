@@ -31,7 +31,8 @@ public class BigBlueButtonHttpHandler extends ExtensionHttpHandler {
     }
     
     private String getParameter(HttpServletRequest req, String param) throws UnsupportedEncodingException {
-        return URLDecoder.decode(req.getParameter(param), "UTF-8");
+        return req.getParameter(param) == null ? null :
+            URLDecoder.decode(req.getParameter(param), "UTF-8");
     }
     
     @Override
@@ -53,9 +54,7 @@ public class BigBlueButtonHttpHandler extends ExtensionHttpHandler {
                     email = name.substring(name.indexOf(">") + 1, name.indexOf("<", 5));
                     id = tresponse.getElement("id").toString();
                     id = id.substring(id.indexOf(">") + 1, id.indexOf("<", 4));
-                    displayName = BigBlueButtonDBWrapper.getDisplayName(id);
-                    displayName = displayName != null && !displayName.equalsIgnoreCase("") ?
-                            displayName : email.substring(0, email.indexOf("@"));
+                    displayName = email.substring(0, email.indexOf("@"));
                 }
             }
 
@@ -113,10 +112,8 @@ public class BigBlueButtonHttpHandler extends ExtensionHttpHandler {
                 resp.getWriter().close();
             } else if (request.equalsIgnoreCase("getRecording")) {
                 String recordingID = getParameter(req, "bigbluebutton_recordID");
-                String url = wrapper.getPlaybackURL(recordingID, null, "presentation");
-                if (url == null) {
-                    url = wrapper.getPlaybackURL(recordingID, null, "video");
-                }
+                String meetingID = getParameter(req, "bigbluebutton_meetingID");
+                String url = wrapper.getPlaybackURL(recordingID, meetingID);
                 if (url == null) {
                     throw new Exception("Recording " + recordingID + " not found");
                 }
@@ -130,8 +127,6 @@ public class BigBlueButtonHttpHandler extends ExtensionHttpHandler {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Request not found");
             }
         } catch (Exception e) {
-            System.out.print("BigBlueButton failed to handle http request " + e.getMessage());
-            e.printStackTrace();
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
@@ -150,7 +145,7 @@ public class BigBlueButtonHttpHandler extends ExtensionHttpHandler {
                 String jwtBody = new String(base64url.decode(split[1]));
                 JSONObject json = new JSONObject(jwtBody);
                 String meetingID = json.getString("meeting_id");
-                String recordingID = json.getString("record_id");
+                String recordingID = json.has("record_id") ? json.getString("record_id") : null;
                 wrapper.sendRecordingReadyEmail(meetingID, recordingID);
                 resp.getOutputStream().println("Success");
             } else {

@@ -12,9 +12,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.json.JSONObject;
-
+import java.util.Random;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +22,6 @@ public class BigBlueButtonDBWrapper {
     private static Connection conn = null;
     private static final String BBB_MEETING_TABLE     = "BBB_Meeting";
     private static final String BBB_APPTMEETING_TABLE = "BBB_ApptMeeting";
-    private static final String BBB_PREFERENCE_TABLE  = "BBB_Preference";
     private static final String CREATE_TABLE_SQL      = "CREATE TABLE " + BBB_MEETING_TABLE + " " +
                                                         "(meetingID VARCHAR(100) NOT NULL UNIQUE, " +
                                                         " meetingName VARCHAR(100), " +
@@ -35,7 +32,8 @@ public class BigBlueButtonDBWrapper {
                                                         " createTime TIMESTAMP NULL, " +
                                                         " attendees VARCHAR(1000) DEFAULT '', " +
                                                         " ended BOOLEAN DEFAULT FALSE, " + 
-                                                        " endTime TIMESTAMP, " +
+                                                        " endTime TIMESTAMP NULL, " +
+                                                        " secret INTEGER NOT NULL, " +
                                                         " PRIMARY KEY ( meetingID ))";
     private static final String CREATE_APPTTABLE_SQL  = "CREATE TABLE " + BBB_APPTMEETING_TABLE + " " +
                                                         "(appointmentID VARCHAR(100) NOT NULL UNIQUE, " +
@@ -44,48 +42,32 @@ public class BigBlueButtonDBWrapper {
                                                         " FOREIGN KEY (meetingID) REFERENCES " +
                                                         BBB_MEETING_TABLE + "(meetingID))";
     
-    private static final String INSERT_TABLE_SQL      = "INSERT INTO " + BBB_MEETING_TABLE +
-                                                        "(meetingID, meetingName, moderatorPW, attendeePW," +
-                                                        " record, creatorEmail, createTime) " +
-                                                        "VALUES(?, ?, ?, ?, ?, ?, ?)";
     
     private static final String FIND_MEETING_SQL      = "SELECT * FROM " + BBB_MEETING_TABLE + " WHERE meetingID = ?";
     private static final String FIND_CREATOR_SQL      = "SELECT creatorEmail FROM " + BBB_MEETING_TABLE +
                                                         " WHERE meetingID = ?";
-    private static final String FIND_MODETATORPW_SQL  = "SELECT moderatorPW FROM " + BBB_MEETING_TABLE +
-                                                        " WHERE meetingID = ?";
-    private static final String UPDATE_MEETING_SQL    = "UPDATE " + BBB_MEETING_TABLE +
-                                                        " SET moderatorPW = ?, attendeePW = ? WHERE meetingID = ?";
+    private static final String UPDATE_MEETINGAUTH_SQL= "UPDATE " + BBB_MEETING_TABLE +
+                                                        " SET moderatorPW = ?, attendeePW = ?, createTime = ? WHERE meetingID = ?";
     private static final String FIND_MEETING_STATUS   = "SELECT ended FROM " + BBB_MEETING_TABLE + " WHERE meetingID = ?";
     private static final String END_MEETING_SQL       = "UPDATE " + BBB_MEETING_TABLE + " SET ended = true, endTime = ?" +
                                                         " WHERE meetingID = ?";
+    private static final String INSERT_MEETING_SQL    = "INSERT " + BBB_MEETING_TABLE +
+                                                        "(meetingID, creatorEmail, meetingName, record, secret) " +
+                                                        "VALUES(?, ?, ?, ?, ?)";
+    
     private static final String FIND_ATTENDEE_SQL     = "SELECT attendees from " + BBB_MEETING_TABLE +
                                                         " WHERE meetingID = ?";
-    private static final String FIND_USERMEETING_SQL  = "SELECT meetingID, meetingName, createTime from " + BBB_MEETING_TABLE +
+    private static final String FIND_SECURITY_SQL     = "SELECT secret from " + BBB_MEETING_TABLE +
+                                                        " WHERE meetingID = ?";
+    private static final String FIND_USERMEETING_SQL  = "SELECT meetingID from " + BBB_MEETING_TABLE +
                                                         " WHERE creatorEmail = ?";
-    private static final String FIND_ACTIVEMEETING_SQL= "SELECT meetingID, meetingName, createTime from " + BBB_MEETING_TABLE +
-                                                        " WHERE creatorEmail = ? and ended = false";
     private static final String SET_ATTENDEE_SQL      = "UPDATE " + BBB_MEETING_TABLE +
                                                         " SET attendees = ? WHERE meetingID = ?";
-    
     private static final String INSERT_APPTMEETING_SQL= "INSERT INTO " + BBB_APPTMEETING_TABLE +
                                                         "(appointmentID, meetingID) " +
                                                         "VALUES(?, ?)";
     private static final String FIND_APPTMEETING_SQL  = "SELECT meetingID FROM " + BBB_APPTMEETING_TABLE + " WHERE appointmentID = ?";
     
-    private static final String CREATE_PREFTABLE_SQL  = "CREATE TABLE " + BBB_PREFERENCE_TABLE + " " +
-                                                        "(id VARCHAR(100) NOT NULL UNIQUE, " +
-                                                        " displayName VARCHAR(100) NOT NULL, " +
-                                                        " showInvitation BOOLEAN DEFAULT TRUE, " +
-                                                        " PRIMARY KEY (id))";
-    private static final String GET_PREFERENCE_SQL    = "SELECT displayName, showInvitation FROM " + BBB_PREFERENCE_TABLE +
-                                                        " WHERE id = ?";
-    private static final String GET_DISPLAYNAME_SQL   = "SELECT displayName FROM " + BBB_PREFERENCE_TABLE +
-                                                        " WHERE id = ?";
-    private static final String INSERT_PREFERENCE_SQL = "INSERT INTO " + BBB_PREFERENCE_TABLE + 
-                                                        "(id, displayName, showInvitation) " + "VALUES(?, ?, ?)";
-    private static final String UPDATE_PREFERENCE_SQL = "UPDATE " + BBB_PREFERENCE_TABLE + 
-                                                        " SET displayName = ?, showInvitation = ? WHERE id = ?";
     
     private static void initializeConnection() throws ServiceException {
         conn = DbPool.getConnection().getConnection();
@@ -94,29 +76,6 @@ public class BigBlueButtonDBWrapper {
     public static void closeConnection() throws SQLException {
         conn.commit(); /* commit the changes to the database */
         conn.close();
-    }
-    
-    /*
-     * Add the meeting to the Meeting table
-     */
-    public static void addMeeting(BBBMeeting meeting, String creatorEmail) throws BBBException {
-        try {
-            initializeConnection();
-            String meetingID = meeting.getMeetingID();
-            PreparedStatement stmt = conn.prepareStatement(INSERT_TABLE_SQL);
-            stmt.setString(1, meetingID);
-            stmt.setString(2, meeting.getName());
-            stmt.setString(3, meeting.getModeratorPW());
-            stmt.setString(4, meeting.getAttendeePW());
-            stmt.setBoolean(5, meeting.getAutoStartRecording());
-            stmt.setString(6, creatorEmail);
-            stmt.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
-            stmt.executeUpdate();
-            conn.commit();
-        } catch (Exception e) {
-            throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
-                    "Failed to save meeting " + meeting.getMeetingID() + ": " + e.getMessage());
-        }
     }
     
     /*
@@ -143,10 +102,11 @@ public class BigBlueButtonDBWrapper {
     public static void updateMeeting(BBBMeeting meeting) throws BBBException {
         try {
             initializeConnection();
-            PreparedStatement stmt = conn.prepareStatement(UPDATE_MEETING_SQL);
+            PreparedStatement stmt = conn.prepareStatement(UPDATE_MEETINGAUTH_SQL);
             stmt.setString(1, meeting.getModeratorPW());
             stmt.setString(2, meeting.getAttendeePW());
-            stmt.setString(3, meeting.getMeetingID());
+            stmt.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            stmt.setString(4, meeting.getMeetingID());
             stmt.executeUpdate();
             conn.commit();
         } catch (Exception e) {
@@ -174,15 +134,13 @@ public class BigBlueButtonDBWrapper {
                 meeting.setAllowStartStopRecording(true);
                 meeting.addMeta("bn-recording-ready-url", BigBlueButtonWrapper.RECORDING_READY_URL);
                 meeting.addMeta("endcallbackurl",
-                        BigBlueButtonWrapper.getEndMeetingCallbackURL(meetingID, "a"));
+                        BigBlueButtonWrapper.getEndMeetingCallbackURL(meetingID,
+                                String.valueOf(getMeetingSecurity(meetingID))));
                 return meeting;
             }
             throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
                     "Meeting " + meetingID + " doesnot exist!");
-        } catch (Exception e) {
-            if (e instanceof BBBException) {
-                throw (BBBException) e;
-            }
+        } catch (SQLException | ServiceException e) {
             throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
                     "Failed to get meeting " + meetingID + ": " + e.getMessage());
         }
@@ -202,10 +160,7 @@ public class BigBlueButtonDBWrapper {
             }
             throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
                     "BigBlueButton meeting has not been created for this appointment!");
-        } catch (Exception e) {
-            if (e instanceof BBBException) {
-                throw (BBBException) e;
-            }
+        } catch (SQLException | ServiceException e) {
             throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
                     "Failed to get meeting: " + e.getMessage());
         }
@@ -225,30 +180,7 @@ public class BigBlueButtonDBWrapper {
             }
             throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
                     "Meeting " + meetingID + " doesnot exist!");
-        } catch (Exception e) {
-            if (e instanceof BBBException) {
-                throw (BBBException) e;
-            }
-            throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
-                    "Failed to get meeting " + meetingID + ": " + e.getMessage());
-        }
-    }
-    
-    private static String findModeratorPW(String meetingID) throws BBBException {
-        try {
-            initializeConnection();
-            PreparedStatement stmt = conn.prepareStatement(FIND_MODETATORPW_SQL);
-            stmt.setString(1, meetingID);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                return rs.getString("moderatorPW");
-            }
-            throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
-                    "Meeting " + meetingID + " doesnot exist!");
-        } catch (Exception e) {
-            if (e instanceof BBBException) {
-                throw (BBBException) e;
-            }
+        } catch (SQLException | ServiceException e) {
             throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
                     "Failed to get meeting " + meetingID + ": " + e.getMessage());
         }
@@ -266,10 +198,7 @@ public class BigBlueButtonDBWrapper {
             stmt.setString(2, meetingID);
             stmt.executeUpdate();
             conn.commit();
-        } catch (Exception e) {
-            if (e instanceof BBBException) {
-                throw (BBBException) e;
-            }
+        } catch (SQLException | ServiceException e) {
             throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
                     "Failed to end meeting " + meetingID + ": " + e.getMessage());
         }
@@ -291,10 +220,6 @@ public class BigBlueButtonDBWrapper {
         if (!tables.next()) { /* table doesn't exist, create one */
             stmt.executeUpdate(CREATE_APPTTABLE_SQL);
         }
-        tables = md.getTables(null, null, BBB_PREFERENCE_TABLE, null);
-        if (!tables.next()) { /* table doesn't exist, create one */
-            stmt.executeUpdate(CREATE_PREFTABLE_SQL);
-        }
         conn.commit();
     }
 
@@ -313,10 +238,7 @@ public class BigBlueButtonDBWrapper {
             }
             throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
                     "Meeting " + meetingID + " doesnot exist!");
-        } catch (Exception e) {
-            if (e instanceof BBBException) {
-                throw (BBBException) e;
-            }
+        } catch (SQLException | ServiceException e) {
             throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
                     "Failed to get meeting: " + e.getMessage());
         }
@@ -328,14 +250,6 @@ public class BigBlueButtonDBWrapper {
      */
     public static boolean authenticateAction(String meetingID, String email) throws BBBException {
         return findCreator(meetingID).equalsIgnoreCase(email);
-    }
-    
-    /*
-     * This function checks if the given password matches the moderatorPW of the meeting so that
-     * only user that are invited to the appointment can join the meeting.
-     */
-    public static boolean authenticateJoinApptMeeting(String meetingID, String password) throws BBBException {
-        return findModeratorPW(meetingID).equalsIgnoreCase(password);
     }
     
     /*
@@ -408,84 +322,16 @@ public class BigBlueButtonDBWrapper {
                     "Failed to find meeting information: " + e.getMessage());
         }
     }
-
-    public static JSONObject getPreference(String id) throws BBBException {
-        try {
-            initializeConnection();
-            PreparedStatement stmt = conn.prepareStatement(GET_PREFERENCE_SQL);
-            stmt.setString(1, id);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                JSONObject obj = new JSONObject();
-                obj.put("displayName", rs.getString("displayName"));
-                obj.put("showInvitation", rs.getBoolean("showInvitation"));
-                return obj;
-            }
-            return null;
-        } catch (Exception e) {
-            throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
-                    "Failed to get preference for user " + id + ": " + e.getMessage());
-        }
-    }
-    
-    public static String getDisplayName(String id) throws BBBException {
-        try {
-            initializeConnection();
-            PreparedStatement stmt = conn.prepareStatement(GET_DISPLAYNAME_SQL);
-            stmt.setString(1, id);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                return rs.getString("displayName");
-            }
-            return null;
-        } catch (Exception e) {
-            throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
-                    "Failed to get display name for user " + id + ": " + e.getMessage());
-        }
-    }
-    
-    public static void updatePreference(String id, String displayName, boolean showInvitation) throws BBBException {
-        try {
-            initializeConnection();
-            PreparedStatement stmt = conn.prepareStatement(INSERT_PREFERENCE_SQL);
-            stmt.setString(1, id);
-            stmt.setString(2, displayName);
-            stmt.setBoolean(3, showInvitation);
-            stmt.executeUpdate();
-            conn.commit();
-        } catch (Exception e) {
-            try { // if old display name exist, try to update it
-                PreparedStatement stmt = conn.prepareStatement(UPDATE_PREFERENCE_SQL);
-                stmt.setString(1, displayName);
-                stmt.setBoolean(2, showInvitation);
-                stmt.setString(3, id);
-                stmt.executeUpdate();
-                conn.commit();
-            } catch (SQLException e1) {
-                throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
-                        "Failed to update preference for user " + id + ": " + e1.getMessage());
-            }
-        }
-    }
     
     public static String getUserCreatedMeeting(String userEmail) throws BBBException {
-        return getUserCreatedMeeting(userEmail, false);
-    }
-
-    public static String getUserCreatedMeeting(String userEmail, Boolean activeOnly) throws BBBException {
         try {
             initializeConnection();
-            PreparedStatement stmt = activeOnly ? conn.prepareStatement(FIND_ACTIVEMEETING_SQL) :
-                conn.prepareStatement(FIND_USERMEETING_SQL);
+            PreparedStatement stmt = conn.prepareStatement(FIND_USERMEETING_SQL);
             stmt.setString(1, userEmail);
             ResultSet rs = stmt.executeQuery();
             String meetings = "";
             while (rs.next()) {
-                if (rs.getString("meetingName") != null) {
-                    meetings += rs.getString("meetingName") + ":";
-                }
-                meetings += rs.getString("meetingID") +
-                        "@" + rs.getTimestamp("createTime").getTime() + ",";
+                meetings += rs.getString("meetingID") + ",";
             }
             stmt.close();
             return meetings.equalsIgnoreCase("") ? meetings :
@@ -496,9 +342,44 @@ public class BigBlueButtonDBWrapper {
         }
     }
 
-    // TO DO: implement some method to authenticate the end meeting callback so that other user
-    // will not be able to guess the url and fake an api call to zimbra server
-    public static boolean authenticateEndMeeting(String meetingID, String securitySalt) {
-        return true;
+    private static int getMeetingSecurity(String meetingID) throws BBBException {
+        try {
+            initializeConnection();
+            PreparedStatement stmt = conn.prepareStatement(FIND_SECURITY_SQL);
+            stmt.setString(1, meetingID);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                return rs.getInt("security");
+            }
+            throw new BBBException(BBBException.MESSAGEKEY_NOTFOUND,
+                    "Meeting " + meetingID + " doesnot exist!");
+        } catch (SQLException | ServiceException e) {
+            throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
+                    "Failed to get security for meeting: " + meetingID + ": " + e.getMessage());
+        }
+    }
+    
+    public static boolean authenticateEndMeeting(String meetingID, String securitySalt)
+            throws BBBException {
+        return Integer.parseInt(securitySalt) == getMeetingSecurity(meetingID);
+    }
+
+    public static void addMeeting(String meetingID, String email, String meetingName,
+            boolean recording) throws BBBException {
+        try {
+            Random rand = new Random();
+            initializeConnection();
+            PreparedStatement stmt = conn.prepareStatement(INSERT_MEETING_SQL);
+            stmt.setString(1, meetingID);
+            stmt.setString(2, email);
+            stmt.setString(3, meetingName);
+            stmt.setBoolean(4, recording);
+            stmt.setInt(5, rand.nextInt());
+            stmt.executeUpdate();
+            conn.commit();
+        } catch (Exception e) {
+            throw new BBBException(BBBException.MESSAGEKEY_GENERALERROR,
+                    "Failed to update meeting " + meetingID + ": " + e.getMessage());
+        }
     }
 }

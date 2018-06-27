@@ -1,6 +1,5 @@
 package Blindside;
 
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
@@ -15,14 +14,6 @@ import javax.mail.internet.MimeMessage;
 import com.zimbra.soap.DocumentHandler;
 
 public class BigBlueButtonHelper {
-    
-    public static Properties getProperties(String configFile) throws Exception {
-        Properties prop = new Properties();
-        FileInputStream input = new FileInputStream(configFile);
-        prop.load(input);
-        input.close();
-        return prop;
-    }
 
     private static String formateDuration(Long duration) {
         String str = "";
@@ -106,10 +97,12 @@ public class BigBlueButtonHelper {
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(destination));
             message.setSubject("BigBlueButton notice: recording for meeting: " + meetingID + " is ready!");
             String getRecordingURL = "https://" + localAddr +
-                    "/service/extension/BigBlueButtonExt/BigBlueButton?request=getRecording&"
-                    + "bigbluebutton_recordID=" + recordID;
+                    "/service/extension/BigBlueButtonExt/BigBlueButton?request=getRecording&" +
+                    (recordID == null ? "bigbluebutton_meetingID=" + meetingID :
+                    "bigbluebutton_recordID=" + recordID);
             String content = "";
-            content += "<p>Recording id: " + recordID + "<br>";
+            content += recordID == null ? "<p>Meeting id: " + meetingID + "<br>" :
+                    "<p>Recording id: " + recordID + "<br>";
             content += "Click <a href='" + getRecordingURL +
                     "' target='_blank'>here</a> to go to the recording.</p>";
             if (statistics != null) {

@@ -89,8 +89,8 @@ BBB_Handler.prototype._insertMeetingInEmail = function(_this, controller, button
             button.addSelectionListener(new AjxListener(controller, _this._joinEmailMeeting, [_this, newContent]));
         } else { // failure cases
             var title = _this.getMessage("BigBlueButton_createMeetingForEmailFailed");
-            var errMsg = "<p>Failed to create the meeting since the following error message:<br/>" + result.error_message +
-                "<br/><br/>Click 'OK' to try again.</p>";
+            var errMsg = "<p>Failed to create the meeting since the following error message:<br/>"
+                         + result.error_message + "</p>";
             var okButtonCallback = function () {
                 _this.sendRequest("createMeetingForEmail", _this.handleCreateEmailMeetingResponse.bind(this), input);
             }

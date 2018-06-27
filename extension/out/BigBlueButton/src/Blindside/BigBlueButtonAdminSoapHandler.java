@@ -33,16 +33,26 @@ public class BigBlueButtonAdminSoapHandler extends DocumentHandler {
                         new Exception("Authentication failed"));
             }
             
-            JSONObject jsonInput = new JSONObject(request.getAttribute("input"));
             String action = request.getAttribute("action");
             
-            if (action.equalsIgnoreCase("saveCredential")) {
-                ext.updateCredential(jsonInput.getString("bigbluebutton_serverURL"),
-                        jsonInput.getString("bigbluebutton_securitySalt"));
+            if (action.equalsIgnoreCase("getCredential")) {
+                JSONObject credentials = ext.getCredential();
+                response.addAttribute("result", "SUCCESSED");
+                response.addAttribute("bigbluebutton_serverURL",
+                        credentials.getString("bigbluebutton_serverURL"));
+                response.addAttribute("bigbluebutton_securitySalt",
+                        credentials.getString("bigbluebutton_securitySalt"));
+            } else if (action.equalsIgnoreCase("saveCredential")) {
+                JSONObject jsonInput = new JSONObject(request.getAttribute("input"));
+                String url = jsonInput.getString("bigbluebutton_serverURL");
+                String salt = jsonInput.getString("bigbluebutton_securitySalt");
+                BigBlueButtonWrapper wrapper = ext.getBBBWrapper();
+                wrapper.verifyBigBlueButtonServer(url, salt);
+                ext.updateCredential(url, salt);
+                response.addAttribute("result", "SUCCESSED");
             } else {
                 throw new BBBException(BBBException.MESSAGEKEY_UNREACHABLE, "Action not found");
             }
-            
             
         } catch (JSONException | BBBException e) {
             response.addAttribute("result", "FAILED");

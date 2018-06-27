@@ -11,7 +11,6 @@ BigBlueButton_viewController.prototype.constructor = BigBlueButton_viewControlle
 ZaController.setViewMethods["BigBlueButton_viewController"] = [];
 
 BigBlueButton_viewController.setViewMethod = function (item) {
-
     if(!this._UICreated) {
         this._contentView = this._view = new this.tabConstructor(this._container, this._appCtxt);
         var elements = new Object();
