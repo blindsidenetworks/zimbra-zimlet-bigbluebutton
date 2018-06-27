@@ -1,6 +1,6 @@
 <zimlet name="com_zimbra_bigbluebutton"
         version="1.0"
-        label="${msg.BigBlueButton_label}"
+        label="${msg.label}"
         description="${msg.BigBlueButton_description}">
 
         <!-- add necessary include -->  

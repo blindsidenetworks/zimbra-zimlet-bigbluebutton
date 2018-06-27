@@ -29,9 +29,9 @@ public class BigBlueButtonWrapper {
         } catch (UnknownHostException e) {
             hostAddr = "localhost";    
         }
-        RECORDING_READY_URL = "http://" + hostAddr
+        RECORDING_READY_URL = "https://" + hostAddr
                 + "/service/extension/BigBlueButtonExt/BigBlueButton?request=recordingReady"; 
-        MEETING_END_URL = "http://" + hostAddr
+        MEETING_END_URL = "https://" + hostAddr
                 + "/service/extension/BigBlueButtonExt/BigBlueButton?request=meetingEnded";
     }
     
