@@ -23,36 +23,26 @@ BBB_Handler.prototype.onShowView = function(viewId) {
                 row.id = "BigBlueButton_appointment_insertMeeting_" + count;
                 var cell1 = row.insertCell(0);
                 var cell2 = row.insertCell(1);
-                cell2.innerHTML = "<div id='BigBlueButton_appointment_insertMeeting_" + count + "_btn' />";
-                var btn = new DwtButton({parent:_this.getShell()});
+                cell2.innerHTML = "<input id='BigBlueButton_appointment_insertMeeting_" + count + "_btn' type='button' />";
+                var btn = document.getElementById("BigBlueButton_appointment_insertMeeting_" + count + "_btn");
 
-                
                 var currentContent = composeView.getHtmlEditor().getContent();
+
                 if (currentContent.indexOf("BigBlueButton meeting has been created for this appointment.") == -1) {
-                    btn.setText(_this.getMessage("BigBlueButton_appointmentInsertMeetingBtn"));
-                    btn.addSelectionListener(new AjxListener(_this, function() {
-                        var callback = function() {
-                            btn.setText(_this.getMessage("BigBlueButton_appointmentJoinMeetingBtn"));
-                            btn.removeSelectionListeners();
-                            btn.addSelectionListener(new AjxListener(_this, function() {
-                                _this._joinMeetingFromAppt(_this);
-                            }))
-                        }
-                        _this._insertMeetingDetails(_this, false, callback);
-                    }));
+                    btn.value = _this.getMessage("BigBlueButton_appointmentInsertMeetingBtn");
+                    btn.onclick = function() {
+                        _this._insertMeetingDetails(_this, false);
+                    };
                 } else {
-                    btn.setText(_this.getMessage("BigBlueButton_appointmentJoinMeetingBtn"));
-                    btn.removeSelectionListeners();
-                    btn.addSelectionListener(new AjxListener(_this, function() {
+                    btn.value = _this.getMessage("BigBlueButton_appointmentJoinMeetingBtn");
+                    btn.onclick = function() {
                         _this._joinMeetingFromAppt(_this);
-                    }))
+                    }
                 }
-                document.getElementById("BigBlueButton_appointment_insertMeeting_" + count + "_btn").appendChild(btn.getHtmlElement());
             } 
         })(this), 0)
     }
 }
-
 
 BBB_Handler.prototype._displayBigBlueButtonApptBar = function(toolbar, controller, isOrganizer) {
     if (!toolbar.getButton("BIGBLUEBUTTON")) {
@@ -187,7 +177,7 @@ BBB_Handler.prototype._saveAppt = function(apptController) {
     }
 };
 
-BBB_Handler.prototype._insertMeetingDetails = function(_this, saveMeeting, callback) {
+BBB_Handler.prototype._insertMeetingDetails = function(_this, saveMeeting) {
     var input = {};
     var composeView = appCtxt.getCurrentView();
     var appt = composeView.getAppt();
@@ -221,9 +211,21 @@ BBB_Handler.prototype._insertMeetingDetails = function(_this, saveMeeting, callb
             composeView.getHtmlEditor().setContent(newContent);
             if (saveMeeting) {
                 setTimeout(AjxCallback.simpleClosure(_this._saveAppt, this, this), 500);
-            }
-            if (typeof callback === "function") {
-                callback();
+            } else {
+                try {
+                    var div = document.getElementById(composeView.__internalId).children[0];
+                    var id = div.id;
+                    var count = id.substring(id.lastIndexOf("zcs") + 3);
+                    var btn = document.getElementById("BigBlueButton_appointment_insertMeeting_" + count + "_btn");
+                    if (btn) {
+                        btn.value = _this.getMessage("BigBlueButton_appointmentJoinMeetingBtn");
+                        btn.onclick = function() {
+                            _this._joinMeetingFromAppt(_this);
+                        }
+                    }
+                } catch (err) { // cannot change the button
+                    return;
+                }
             }
         } else { // failure cases
             var title = _this.getMessage("BigBlueButton_createApptMeetingFailed");

@@ -336,9 +336,17 @@ public class BigBlueButtonWrapper {
 
     public void createApptMeeting(String meetingName, String organizer,
             String uid) throws BBBException {
-        String meetingID = getRandomMeetingID();
-        createMeeting(meetingID, organizer, meetingName, false);
-        BigBlueButtonDBWrapper.addApptMeeting(uid, meetingID);
+        try {
+            findApptMeetingID(uid); // check if meeting already exist for the appointment
+        } catch (BBBException e) {
+            if (e.getMessageKey().equalsIgnoreCase(BBBException.MESSAGEKEY_NOTFOUND)) {
+                String meetingID = getRandomMeetingID();
+                createMeeting(meetingID, organizer, meetingName, false);
+                BigBlueButtonDBWrapper.addApptMeeting(uid, meetingID);
+            } else {
+                throw e;
+            }
+        }
     }
     
     public String getJoinApptMeetingURL(String meetingName, String displayName, String organizer,
