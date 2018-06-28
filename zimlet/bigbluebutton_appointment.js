@@ -57,7 +57,7 @@ BBB_Handler.prototype.onShowView = function(viewId) {
 BBB_Handler.prototype._displayBigBlueButtonApptBar = function(toolbar, controller, isOrganizer) {
     if (!toolbar.getButton("BIGBLUEBUTTON")) {
         var buttonIndex = toolbar.opList.length + 1;
-        var button = toolbar.createOp("BIGBLUEBUTTON", {text: this.getMessage("BigBlueButton_label"),
+        var button = toolbar.createOp("BIGBLUEBUTTON", {text: this.getMessage("label"),
                                                         tooltip: this.getMessage("BigBlueButton_bigBlueButtonTip"),
                                                         index: buttonIndex});
         toolbar.addOp("BIGBLUEBUTTON", buttonIndex);

@@ -1,6 +1,6 @@
 <zimlet name="com_zimbra_bigbluebutton_admin"
         version="1.0"
-        label="${msg.BigBlueButton_label}"
+        label="${msg.label}"
         description="${msg.BigBlueButton_description}"
         extension="true"
         >
