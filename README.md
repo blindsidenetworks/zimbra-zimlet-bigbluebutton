@@ -11,6 +11,6 @@ cd zimbra-zimlet-bigbluebutton
 ```
 ## Uninstallation
 ```
-cd /path/to/folder/com_zimbra_bigbluebutton
+cd /path/to/folder/zimbra-zimlet-bigbluebutton
 ./install.sh -u
 ```
