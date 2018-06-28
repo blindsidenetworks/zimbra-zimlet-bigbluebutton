@@ -5,8 +5,8 @@ This zimlet provides you an easy way to start new meeting using BigBlueButton, j
 
 ## Installation
 ```
-git clone -b yellowstar https://github.com/yunkaiwang/com_zimbra_bigbluebutton  
-cd com_zimbra_bigbluebutton  
+git clone -b yellowstar https://github.com/yunkaiwang/zimbra-zimlet-bigbluebutton.git
+cd zimbra-zimlet-bigbluebutton 
 ./install.sh  
 ```
 ## Uninstallation
