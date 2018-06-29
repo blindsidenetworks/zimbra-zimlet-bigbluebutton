@@ -153,7 +153,7 @@ public class BigBlueButtonWrapper {
         
         Map<String, Object> recordingInfo = this.getRecordInfo(meetingID, null);
         if (recordingInfo.containsKey(meetingID)) {
-            info.put("recording", recordingInfo.get(meetingID));
+            info.put("record", recordingInfo.get(meetingID));
         }
         
         return info;

@@ -130,11 +130,10 @@ public class BigBlueButtonSoapHandler extends DocumentHandler {
                     attendeeElm.addAttribute("email", (String) attendeeInfo.get("email"));
                     ++userCount;
                 }
-                if (info.containsKey("recording")) {
+                if (info.containsKey("record")) {
                     Element record = element.addUniqueElement("record");
-                    System.out.println("BigBlueButton: " + info.get("recording"));
                     @SuppressWarnings("unchecked")
-                    HashMap<String, String> recordingInfo = (HashMap<String, String>) info.get("recording");
+                    HashMap<String, String> recordingInfo = (HashMap<String, String>) info.get("record");
                     record.addAttribute("playbackURL", recordingInfo.get("playbackURL"));
                     record.addAttribute("recordID", recordingInfo.get("recordID"));
                 }
@@ -183,8 +182,6 @@ public class BigBlueButtonSoapHandler extends DocumentHandler {
 
             return response;
         } catch (Exception e) {
-            System.out.println("BigBlueButton failed to handle soap request " + e.getMessage());
-            e.printStackTrace();
             response.addAttribute("result", "FAILED");
             response.addAttribute("error_message", e.getMessage());
             return response;
