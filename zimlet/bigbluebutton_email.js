@@ -44,7 +44,7 @@ BBB_Handler.prototype._joinEmailMeeting = function(_this, currentContent) {
     var regex = /bigbluebutton_meetingID=[a-zA-Z0-9\.-]+/
     var match = currentContent.match(regex)
 
-    if (match.length === 0) {
+    if (!match || match.length === 0) {
         var title = this.getMessage("BigBlueButton_joinMeetingFailed");
         var errMsg = this.getJoinMeetingFailedHTML({
             error_message: "Cannot find meeting id"
