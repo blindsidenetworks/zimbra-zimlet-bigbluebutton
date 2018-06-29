@@ -140,7 +140,7 @@ BBB_Handler.prototype.displayErrorDlg = function(title, errorMsg, okButtonCallba
     if (this._errorDlg) {
         this._errorDlg.setTitle(title);
         document.getElementById("BigBlueButton_errorDlgMsg").innerHTML = errorMsg;
-        this._errorDlg.setButtonListener(DwtDialog.OK_BUTTON, callback);
+        this._setErrorDlgOKButtonListener(callback);
         this._errorDlg.popup();
         return;
     }
@@ -158,6 +158,10 @@ BBB_Handler.prototype.displayErrorDlg = function(title, errorMsg, okButtonCallba
     const cancelButton = new DwtDialog_ButtonDescriptor(cancelButtonID,
         this.getMessage("BigBlueButton_cancelButton"), DwtDialog.ALIGN_RIGHT);
 
+    BBB_Handler.prototype._setErrorDlgOKButtonListener = function(callback) {
+        this._errorDlg.setButtonListener(tryAgainButtonID, new AjxListener(this, callback));
+    }
+
     this._errorDlg = new ZmDialog({
         parent: this.getShell(),
         title: title,
@@ -165,7 +169,7 @@ BBB_Handler.prototype.displayErrorDlg = function(title, errorMsg, okButtonCallba
         standardButtons: DwtDialog.NO_BUTTONS,
         extraButtons: [tryAgainButton, cancelButton]
     });
-    this._errorDlg.setButtonListener(tryAgainButtonID, callback);
+    this._setErrorDlgOKButtonListener(callback);
     this._errorDlg.setButtonListener(cancelButtonID, (function(_this) {
         return function() {
             _this._errorDlg.popdown();

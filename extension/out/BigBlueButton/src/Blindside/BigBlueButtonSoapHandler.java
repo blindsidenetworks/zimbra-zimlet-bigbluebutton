@@ -182,6 +182,8 @@ public class BigBlueButtonSoapHandler extends DocumentHandler {
 
             return response;
         } catch (Exception e) {
+            System.out.println("BigBlueButton failed to handle soap request " + e.getMessage());
+            e.printStackTrace();
             response.addAttribute("result", "FAILED");
             response.addAttribute("error_message", e.getMessage());
             return response;
