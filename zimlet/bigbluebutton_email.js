@@ -41,7 +41,7 @@ BBB_Handler.prototype.sendJoinEmailMeetingReq = function(_this, meetingID) {
 }
 
 BBB_Handler.prototype._joinEmailMeeting = function(_this, currentContent) {
-    var regex = /bigbluebutton_meetingID=[a-z0-9\.-]+/
+    var regex = /bigbluebutton_meetingID=[a-zA-Z0-9\.-]+/
     var match = currentContent.match(regex)
 
     if (match.length === 0) {
