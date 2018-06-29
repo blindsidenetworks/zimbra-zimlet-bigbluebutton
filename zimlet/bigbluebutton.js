@@ -159,7 +159,7 @@ BBB_Handler.prototype.displayErrorDlg = function(title, errorMsg, okButtonCallba
         this.getMessage("BigBlueButton_cancelButton"), DwtDialog.ALIGN_RIGHT);
 
     BBB_Handler.prototype._setErrorDlgOKButtonListener = function(callback) {
-        this._errorDlg.setButtonListener(tryAgainButtonID, new AjxListener(this, callback));
+        this._errorDlg.setButtonListener(tryAgainButtonID, callback);
     }
 
     this._errorDlg = new ZmDialog({
