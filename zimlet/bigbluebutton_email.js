@@ -45,14 +45,14 @@ BBB_Handler.prototype._joinEmailMeeting = function(_this, currentContent) {
     var match = currentContent.match(regex)
 
     if (!match || match.length === 0) {
-        var title = this.getMessage("BigBlueButton_joinMeetingFailed");
-        var errMsg = this.getJoinMeetingFailedHTML({
+        var title = _this.getMessage("BigBlueButton_joinMeetingFailed");
+        var errMsg = _this.getJoinMeetingFailedHTML({
             error_message: "Cannot find meeting id"
         });
         var okButtonCallback = function () {
-            this.sendJoinEmailMeetingReq(this, meetingID);
+            _this._joinEmailMeeting(_this, currentContent);
         }
-        _this._joinEmailMeeting(_this, currentContent);
+        _this.displayErrorDlg(title, errMsg, okButtonCallback);
     } else {
         var meetingID = match[0].substring(match[0].indexOf("=") + 1);
         _this.sendJoinEmailMeetingReq(_this, meetingID);
