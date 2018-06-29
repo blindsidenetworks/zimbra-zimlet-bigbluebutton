@@ -132,6 +132,7 @@ public class BigBlueButtonSoapHandler extends DocumentHandler {
                 }
                 if (info.containsKey("recording")) {
                     Element record = element.addUniqueElement("record");
+                    System.out.println("BigBlueButton: " + info.get("recording"));
                     @SuppressWarnings("unchecked")
                     HashMap<String, String> recordingInfo = (HashMap<String, String>) info.get("recording");
                     record.addAttribute("playbackURL", recordingInfo.get("playbackURL"));
