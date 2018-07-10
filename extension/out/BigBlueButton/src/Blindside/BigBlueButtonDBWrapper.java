@@ -132,6 +132,7 @@ public class BigBlueButtonDBWrapper {
                 meeting.setRecord(true);
                 meeting.setAutoStartRecording(rs.getBoolean("record"));
                 meeting.setAllowStartStopRecording(true);
+                meeting.setLogoutURL(BigBlueButtonWrapper.LOGOUT_URL);
                 meeting.addMeta("bn-recording-ready-url", BigBlueButtonWrapper.RECORDING_READY_URL);
                 meeting.addMeta("endcallbackurl",
                         BigBlueButtonWrapper.getEndMeetingCallbackURL(meetingID,

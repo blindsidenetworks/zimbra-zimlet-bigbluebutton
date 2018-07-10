@@ -16,7 +16,8 @@ public class BigBlueButtonExt implements ZimbraExtension {
     
     public static final String HTML_JOINMEETING_TEMPLATE  = "/opt/zimbra/lib/ext/BigBlueButton/joinMeeting.html";
     public static final String HTML_MEETINGENDED_TEMPLATE = "/opt/zimbra/lib/ext/BigBlueButton/meetingEnded.html";
-    public static final String HTML_EndMeeting_TEMPLATE   = "/opt/zimbra/lib/ext/BigBlueButton/endMeeting.html";
+    public static final String HTML_ENDMEETING_TEMPLATE   = "/opt/zimbra/lib/ext/BigBlueButton/endMeeting.html";
+    public static final String HTML_LOGOUT_TEMPLATE       = "/opt/zimbra/lib/ext/BigBlueButton/logout.html";
     private BigBlueButtonWrapper bbb;
     
     public String getName() {

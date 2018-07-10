@@ -21,6 +21,7 @@ import org.json.JSONObject;
 public class BigBlueButtonWrapper {
     private BaseBBBAPI api;
     public static final String RECORDING_READY_URL; 
+    public static final String LOGOUT_URL;
     private static final String MEETING_END_URL;
     static {
         String hostAddr = null;    
@@ -31,6 +32,8 @@ public class BigBlueButtonWrapper {
         }
         RECORDING_READY_URL = "https://" + hostAddr
                 + "/service/extension/BigBlueButtonExt/BigBlueButton?request=recordingReady"; 
+        LOGOUT_URL = "https://" + hostAddr
+                + "/service/extension/BigBlueButtonExt/BigBlueButton?request=logout";
         MEETING_END_URL = "https://" + hostAddr
                 + "/service/extension/BigBlueButtonExt/BigBlueButton?request=meetingEnded";
     }

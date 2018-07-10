@@ -97,7 +97,7 @@ public class BigBlueButtonHttpHandler extends ExtensionHttpHandler {
                     byte[] encoded = Files.readAllBytes(Paths.get(BigBlueButtonExt.HTML_MEETINGENDED_TEMPLATE));
                     html = new String(encoded, "UTF-8");
                 } else {
-                    byte[] encoded = Files.readAllBytes(Paths.get(BigBlueButtonExt.HTML_EndMeeting_TEMPLATE));
+                    byte[] encoded = Files.readAllBytes(Paths.get(BigBlueButtonExt.HTML_ENDMEETING_TEMPLATE));
                     html = new String(encoded, "UTF-8");
                     int liveAttendee = wrapper.getNumLiveAttendee(meetingID);
                     html = String.format(html, liveAttendee, meetingID);
@@ -123,6 +123,11 @@ public class BigBlueButtonHttpHandler extends ExtensionHttpHandler {
                 String securitySalt = getParameter(req, "bigbluebutton_securitySalt");
                 wrapper.endMeetingInDB(meetingID, securitySalt);
                 resp.setStatus(HttpServletResponse.SC_OK);
+            } else if (request.equalsIgnoreCase("logout")) {
+                PrintWriter out = resp.getWriter();
+                byte[] encoded = Files.readAllBytes(Paths.get(BigBlueButtonExt.HTML_LOGOUT_TEMPLATE));
+                String html = new String(encoded, "UTF-8");
+                out.println(html);
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Request not found");
             }
