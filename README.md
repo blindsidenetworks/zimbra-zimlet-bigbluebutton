@@ -14,3 +14,22 @@ cd zimbra-zimlet-bigbluebutton
 cd /path/to/folder/zimbra-zimlet-bigbluebutton
 ./install.sh -u
 ```
+## Example
+
+Create meeting dialog:  
+![ScreenShot](/screenshot/start_meeting_dialog.png?raw=true "Start Meeting")  
+
+Join meeting dialog when meeting is alive:  
+![ScreenShot](/screenshot/join_meeting_dialog.png?raw=true "Join Active Meeting")  
+
+Join meeting dialog when meeting is dead:  
+![ScreenShot](/screenshot/join_meeting_dialog_meeting_ended.png?raw=true "Join Ended Meeting")  
+
+End meeting dialog:  
+![ScreenShot](/screenshot/end_meeting_dialog.png?raw=true "End Meeting")
+
+Before create meeting for an appointment:  
+![ScreenShot](/screenshot/appointment_before.png?raw=true "Appointment")  
+
+After create meeting for an appointment:  
+![ScreenShot](/screenshot/appointment.png?raw=true "Appointment")  
